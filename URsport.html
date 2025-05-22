@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>App Simulation</title>
+
+    <!-- PWA Manifest und Theme Farbe -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50"> <!-- Passend zum Header deiner App -->
+
+    <!-- Optional: Für bessere iOS Unterstützung -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AppSim"> <!-- Kurzer Name für iOS Homescreen -->
+
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -279,7 +289,7 @@
 <body>
 <div class="app-container">
     <div class="header">
-        <a href="#" class="back-arrow" id="backArrow">&lt;</a>
+        <a href="#" class="back-arrow" id="backArrow"><</a>
         <span class="title" id="headerTitle">Zeitplan</span>
         <div class="placeholder-div"></div>
     </div>
@@ -482,7 +492,7 @@
                 if (profileButton) {
                     showTab('profil', 'Verlauf', profileButton); // Wechsel zum Profil-Tab nach dem Scan
                 }
-            }, 400);
+            }, 400); // Reduzierte Zeit auf 400ms für einen schnelleren "Scan"
         } else {
             stopCamera();
         }
@@ -538,7 +548,7 @@
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Monate sind 0-basiert
         const year = now.getFullYear();
         const currentTimestamp = `${hours}:${minutes} ${day}/${month}/${year}`;
 
@@ -546,11 +556,9 @@
         document.getElementById('profile-course-title-display').textContent = savedCourse;
         document.getElementById('profile-datetime-display').textContent = currentTimestamp;
 
-        // Ersten Eintrag unter "JÜNGSTE" aktualisieren
+        // Ersten Eintrag unter "JÜNGSTE" aktualisieren (dieser simuliert den gerade abgeschlossenen Scan)
         document.getElementById('latest-history-title').textContent = savedCourse;
         document.getElementById('latest-history-timestamp').textContent = currentTimestamp;
-        // Der Subtitle "0" und "Willkommen, Simon..." bleiben statisch für diesen Eintrag oder könnten auch dynamisch sein,
-        // je nach genauer Anforderung an die Historie. Fürs Erste werden sie wie im HTML belassen.
     }
 
     function populateDateHeader() {
@@ -601,6 +609,17 @@
             if (zeitplanButton) showTab('zeitplan', 'Zeitplan', zeitplanButton);
         });
     });
+
+    // Service Worker Registrierung (optional, aber gut für PWA Offline-Fähigkeiten)
+    // if ('serviceWorker' in navigator) {
+    //   window.addEventListener('load', () => {
+    //     navigator.serviceWorker.register('/service-worker.js').then(registration => {
+    //       console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    //     }, err => {
+    //       console.log('ServiceWorker registration failed: ', err);
+    //     });
+    //   });
+    // }
 </script>
 </body>
 </html>
