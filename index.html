@@ -2,17 +2,22 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- WICHTIG: viewport-fit=cover hinzugefügt für safe-area-inset-* -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>App Simulation</title>
 
     <!-- PWA Manifest und Theme Farbe -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4CAF50"> <!-- Passend zum Header deiner App -->
+    <!-- Theme-color auf Weiß geändert, passend zum neuen weißen Header -->
+    <meta name="theme-color" content="#FFFFFF">
 
     <!-- Optional: Für bessere iOS Unterstützung -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AppSim"> <!-- Kurzer Name für iOS Homescreen -->
+    <!-- Für iOS: default lässt System entscheiden (meist dunkel auf hell, hell auf dunkel)
+         oder black-translucent wenn der Inhalt unter die Statusleiste gehen soll (mit safe-area-inset-top beachten)
+         Da der Header jetzt weiß ist, ist 'default' oft besser. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AppSim">
 
     <style>
         body {
@@ -21,43 +26,50 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #f0f0f0; /* Hintergrund der Seite außerhalb der App-Box */
             color: #333;
         }
         .app-container {
             width: 100%;
-            max-width: 420px; /* Typische Smartphone-Breite */
-            height: 100vh; /* Nimmt die volle Höhe des Viewports ein */
-            margin: 0 auto; /* Zentriert den Container auf größeren Bildschirmen */
-            background-color: #fff; /* Standard-Hintergrundfarbe der App */
+            max-width: 420px;
+            height: 100vh;
+            margin: 0 auto;
+            background-color: #fff; /* Haupt-Hintergrundfarbe der App */
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Verhindert Scrollbalken am Hauptcontainer */
+            overflow: hidden;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
+            box-sizing: border-box; /* Wichtig, falls padding direkt hier gesetzt wird */
         }
 
         .header {
-            background-color: #4CAF50;
-            color: white;
+            /* --- ÄNDERUNG 1 START --- */
+            background-color: #fff; /* Hintergrund weiß */
+            color: #333;            /* Schrift schwarz/dunkelgrau */
+            border-bottom: 1px solid #e0e0e0; /* Leichte Trennlinie unten */
+            /* --- ÄNDERUNG 1 ENDE --- */
             padding: 10px 15px;
             font-size: 1.1em;
             font-weight: bold;
-            position: fixed; /* Fester Header */
-            top: 0;
+            position: fixed;
+            top: 0; /* Bleibt oben, wird durch safe-area-inset-top ggf. vom System gepusht */
             left: 0;
             right: 0;
             z-index: 1001;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            max-width: 420px; /* Muss mit app-container übereinstimmen */
-            margin: 0 auto; /* Zentrierung für fixed Element */
+            max-width: 420px;
+            margin: 0 auto;
             box-sizing: border-box;
+            /* Berücksichtige die obere Safe Area (z.B. für Notch auf iPhones) */
+            padding-top: calc(10px + env(safe-area-inset-top));
+            height: calc(50px + env(safe-area-inset-top)); /* Ursprüngliche Höhe + Safe Area */
         }
         .header .title {
             flex-grow: 1;
-            text-align: center; /* Standardmäßig zentriert */
+            text-align: center;
         }
         .header .title.left-aligned {
             text-align: left;
@@ -65,34 +77,40 @@
         .header .back-arrow {
             font-size: 1.5em;
             font-weight: bold;
-            color: white;
+            /* --- ÄNDERUNG 1 START --- */
+            color: #FFEB3B;         /* Gelbe Pfeilfarbe */
+            /* --- ÄNDERUNG 1 ENDE --- */
             text-decoration: none;
-            visibility: hidden; /* Standardmäßig unsichtbar */
-            width: 24px; /* Platzhalterbreite für Layout */
+            visibility: hidden;
+            width: 24px;
             text-align: left;
         }
         .header .placeholder-div {
-            width: 24px; /* Platzhalter für Symmetrie */
+            width: 24px;
         }
 
         .content {
             flex-grow: 1;
-            padding-top: 50px; /* Platz für fixed Header */
-            padding-bottom: 60px; /* Platz für fixed Footer */
-            overflow-y: auto; /* Nur der Inhalt soll scrollen */
-            background-color: #fff; /* Wichtig, damit Kamera nicht durchscheint */
+             /* Höhe des Headers (50px) + Safe Area oben */
+            padding-top: calc(50px + env(safe-area-inset-top));
+            /* --- ÄNDERUNG 2 START --- */
+            /* Höhe des Footers (ca. 60px) + untere Safe Area für OS-Navigationsleiste */
+            padding-bottom: calc(60px + env(safe-area-inset-bottom, 15px));
+            /* --- ÄNDERUNG 2 ENDE --- */
+            overflow-y: auto;
+            background-color: #fff;
         }
         .tab-content {
-            display: none; /* Standardmäßig alle Tab-Inhalte ausblenden */
-            padding: 15px; /* Innenabstand für Tabs */
+            display: none;
+            padding: 15px;
         }
         .tab-content.active {
-            display: block; /* Nur den aktiven Tab-Inhalt anzeigen */
+            display: block;
         }
-        #scannen-content.active { /* Spezifisch für den Scan-Tab, wenn er aktiv ist */
-            display: flex; /* Flexbox-Layout für den Scan-Inhalt */
+        #scannen-content.active {
+            display: flex;
         }
-        .tab-content.no-padding { padding: 0; } /* Für Scan-Tab */
+        .tab-content.no-padding { padding: 0; }
 
 
         .footer {
@@ -101,15 +119,28 @@
             display: flex;
             justify-content: space-around;
             padding: 8px 0;
-            position: fixed; /* Fester Footer */
-            bottom: 0;
+            position: fixed;
+            /* --- ÄNDERUNG 2 START --- */
+            /* Positioniere Footer über der unteren Safe Area / OS-Navigationsleiste */
+            bottom: env(safe-area-inset-bottom, 15px); /* Fallback auf 15px, falls safe-area nicht verfügbar */
+            /* --- ÄNDERUNG 2 ENDE --- */
             left: 0;
             right: 0;
             z-index: 1001;
-            max-width: 420px; /* Muss mit app-container übereinstimmen */
-            margin: 0 auto; /* Zentrierung für fixed Element */
+            max-width: 420px;
+            margin: 0 auto;
             box-sizing: border-box;
+            /* Padding unten im Footer selbst, um Inhalt vom Rand der Safe Area abzusetzen */
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); /* Nur wenn der Footer selbst über die Safe Area hinausgeht */
+                                                                      /* Besser: Das Padding im .content regelt den Abstand */
         }
+        /* Korrektur: Das padding-bottom für den Footer selbst ist besser, wenn der bottom-Wert 0 wäre und der Inhalt nicht verdeckt werden soll.
+           Da wir den Footer aber mit bottom: env(...) bereits hochschieben, ist zusätzliches padding-bottom im Footer nicht unbedingt nötig,
+           es sei denn, man möchte *innerhalb* des Footers noch mehr Abstand nach unten.
+           Für deinen Fall, wo der Footer über der Systemleiste schweben soll, ist die Anpassung von 'bottom' entscheidend.
+        */
+
+
         .footer-button {
             background: none; border: none; color: #777;
             display: flex; flex-direction: column; align-items: center;
@@ -135,7 +166,7 @@
         .pill { background-color: #FFEB3B; padding: 6px 12px; border-radius: 15px; font-size: 0.8em; white-space: nowrap; color: #333; font-weight: 500;}
         .pill .close-x { margin-left: 5px; cursor: pointer; font-weight: bold;}
 
-        .schedule-list { padding-bottom: 20px; }
+        .schedule-list { padding-bottom: 20px; } /* Behält etwas Abstand am Ende der Liste */
         .schedule-item {
             display: flex;
             padding: 12px 0;
@@ -223,10 +254,11 @@
         /* Profil Tab */
         #profil-content { background-color: #fff; padding-bottom: 20px; }
         #profil-welcome-bar {
+            /* Hintergrund der Welcome-Bar bleibt grün, als Akzent */
             background-color: #4CAF50;
             color: white;
             padding: 10px 15px;
-            margin: -15px -15px 15px -15px;
+            margin: -15px -15px 15px -15px; /* Behält den Einzug bei, um den vollen Header-Bereich zu nutzen */
             font-size: 0.9em;
         }
         #profil-welcome-bar p { margin: 5px 0; font-weight: bold; }
@@ -369,14 +401,14 @@
                 <div class="timestamp" id="profile-datetime-display"></div>
             </div>
             <p class="section-title">JÜNGSTE</p>
-            <div class="history-item" id="latest-history-entry"> <!-- ID hinzugefügt -->
+            <div class="history-item" id="latest-history-entry"> 
                 <div class="check-icon-container"><span class="css-checkmark"></span></div>
                 <div class="details">
-                    <p class="title" id="latest-history-title">Schwimmbad</p> <!-- ID hinzugefügt -->
+                    <p class="title" id="latest-history-title">Schwimmbad</p> 
                     <p class="subtitle">0</p>
                     <small class="subtitle user-welcome">Willkommen, Simon ...</small>
                 </div>
-                <div class="timestamp" id="latest-history-timestamp">17:49 19/5/2025</div> <!-- ID hinzugefügt -->
+                <div class="timestamp" id="latest-history-timestamp">17:49 19/5/2025</div> 
             </div>
             <div class="history-item">
                  <div class="check-icon-container"><span class="css-checkmark"></span></div>
@@ -490,9 +522,9 @@
              scanTimeout = setTimeout(() => {
                 const profileButton = Array.from(document.querySelectorAll('.footer-button')).find(btn => btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("showTab('profil'"));
                 if (profileButton) {
-                    showTab('profil', 'Verlauf', profileButton); // Wechsel zum Profil-Tab nach dem Scan
+                    showTab('profil', 'Verlauf', profileButton); 
                 }
-            }, 1000); // Reduzierte Zeit auf 400ms für einen schnelleren "Scan"
+            }, 1000); 
         } else {
             stopCamera();
         }
@@ -527,7 +559,7 @@
         }
 
         if (tabId === 'profil') {
-            updateProfileDisplay(); // Dies muss aufgerufen werden, wenn der Profil-Tab angezeigt wird.
+            updateProfileDisplay(); 
         }
     }
 
@@ -548,15 +580,13 @@
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0'); // Monate sind 0-basiert
+        const month = String(now.getMonth() + 1).padStart(2, '0'); 
         const year = now.getFullYear();
         const currentTimestamp = `${hours}:${minutes} ${day}/${month}/${year}`;
 
-        // Obersten Eintrag (aktueller Scan) aktualisieren
         document.getElementById('profile-course-title-display').textContent = savedCourse;
         document.getElementById('profile-datetime-display').textContent = currentTimestamp;
 
-        // Ersten Eintrag unter "JÜNGSTE" aktualisieren (dieser simuliert den gerade abgeschlossenen Scan)
         document.getElementById('latest-history-title').textContent = savedCourse;
         document.getElementById('latest-history-timestamp').textContent = currentTimestamp;
     }
@@ -610,16 +640,6 @@
         });
     });
 
-    // Service Worker Registrierung (optional, aber gut für PWA Offline-Fähigkeiten)
-    // if ('serviceWorker' in navigator) {
-    //   window.addEventListener('load', () => {
-    //     navigator.serviceWorker.register('/service-worker.js').then(registration => {
-    //       console.log('ServiceWorker registration successful with scope: ', registration.scope);
-    //     }, err => {
-    //       console.log('ServiceWorker registration failed: ', err);
-    //     });
-    //   });
-    // }
 </script>
 </body>
 </html>
